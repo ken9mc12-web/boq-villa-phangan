@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="th"><head><base target="_top"><meta charset="utf-8">
+<title>BOQ บ้านสระว่ายน้ำ เกาะพะงัน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+[hidden]{display:none!important}
+/* Layout: drawing-sheet header strip, cost summary, then category ledgers that unfold like BOQ sections */
+:root{
+  --bg:#f3f4f2; --paper:#ffffff; --ink:#1d2328; --muted:#5d666d; --line:#d7dbd8; --soft:#eceeec;
+  --accent:#1f5f8b; --accent-ink:#ffffff; --est:#fff2b3; --est-ink:#6b5300; --ok:#2f7a4f; --ok-bg:#e3f1e8; --bar:#9fb7c8;
+  --f-display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#131719; --paper:#1b2023; --ink:#e6eaec; --muted:#9aa4aa; --line:#2f373b; --soft:#232a2e;
+  --accent:#6fb0dc; --accent-ink:#0c1a24; --est:#4a3f12; --est-ink:#f3dc86; --ok:#7fd1a1; --ok-bg:#1d3527; --bar:#3d6680; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#131719; --paper:#1b2023; --ink:#e6eaec; --muted:#9aa4aa; --line:#2f373b; --soft:#232a2e;
+  --accent:#6fb0dc; --accent-ink:#0c1a24; --est:#4a3f12; --est-ink:#f3dc86; --ok:#7fd1a1; --ok-bg:#1d3527; --bar:#3d6680; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.sheet{display:grid;grid-template-columns:1fr auto;gap:12px 24px;border:1.5px solid var(--ink);background:var(--paper);padding:16px 18px}
+.sheet h1{font-size:clamp(20px,3.2vw,28px);line-height:1.2}
+.sheet .meta{color:var(--muted);font-size:12.5px;display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:6px}
+.stamp{border-left:1.5px solid var(--ink);padding-left:16px;display:grid;grid-template-columns:auto auto;gap:2px 12px;font-size:12px;align-content:start}
+.stamp b{font-family:var(--f-num);font-weight:500}
+.stamp span{color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:10.5px;align-self:center}
+@media (max-width:640px){.sheet{grid-template-columns:1fr}.stamp{border-left:0;border-top:1px solid var(--line);padding:10px 0 0}}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:820px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{background:var(--paper);border:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .l{font-size:11.5px;color:var(--muted);letter-spacing:.04em}
+.kpi .v{font-family:var(--f-num);font-size:clamp(17px,2.3vw,22px);font-weight:500}
+.kpi .s{font-size:11.5px;color:var(--muted)}
+.kpi.main{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.kpi.main .l,.kpi.main .s{color:inherit;opacity:.85}
+.meter{height:6px;background:var(--soft);margin-top:6px;position:relative}
+.meter i{position:absolute;inset:0 auto 0 0;background:var(--ok)}
+.panel{background:var(--paper);border:1px solid var(--line);padding:16px}
+.grid2{display:grid;grid-template-columns:1.25fr 1fr;gap:20px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.panel h2{font-size:17px;margin-bottom:10px}
+.catbars{display:flex;flex-direction:column;gap:5px}
+.cb{display:grid;grid-template-columns:22px minmax(0,1fr) 92px 44px;gap:8px;align-items:center;font-size:12.5px;cursor:pointer;padding:2px 0}
+.cb:hover .n{color:var(--accent)}
+.cb .i{color:var(--muted);font-family:var(--f-num);font-size:11px}
+.cb .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;position:relative}
+.cb .n::after{content:"";position:absolute;left:0;bottom:-1px;height:3px;width:var(--w);background:var(--bar)}
+.cb .a{text-align:right;font-family:var(--f-num);font-size:12px}
+.cb .p{text-align:right;color:var(--muted);font-family:var(--f-num);font-size:11px}
+.markup{display:flex;flex-direction:column;gap:0}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) 78px 120px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--soft)}
+.mrow .a{text-align:right;font-family:var(--f-num)}
+.mrow.tot{border-bottom:0;border-top:1.5px solid var(--ink);font-weight:600;padding-top:10px}
+.mrow.tot .a{font-size:17px}
+.mrow input{width:100%;font-family:var(--f-num);font-size:13px;padding:4px 6px;border:1px solid var(--line);background:var(--est);color:var(--est-ink);text-align:right}
+.hint{font-size:11.5px;color:var(--muted);margin-top:8px}
+.tabs{display:flex;gap:2px;border-bottom:1.5px solid var(--ink);overflow-x:auto}
+.tabs button{font:600 13.5px var(--f-display);background:none;border:0;padding:9px 14px;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:3px solid transparent;margin-bottom:-1.5px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tabs button:focus-visible,.btn:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tools input[type=search]{flex:1 1 220px;min-width:0;padding:8px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font:inherit}
+.btn{font:500 12.5px var(--f-body);padding:7px 11px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.legend{display:flex;gap:12px;font-size:11.5px;color:var(--muted);flex-wrap:wrap}
+.chip{display:inline-block;font-size:10.5px;padding:1px 6px;letter-spacing:.02em;white-space:nowrap}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.chip.est{background:var(--est);color:var(--est-ink)}
+details.cat{background:var(--paper);border:1px solid var(--line)}
+details.cat+details.cat{margin-top:-1px}
+details.cat>summary{list-style:none;display:grid;grid-template-columns:34px minmax(0,1fr) repeat(3,minmax(0,118px)) 18px;gap:8px;align-items:center;padding:10px 12px;cursor:pointer}
+details.cat>summary::-webkit-details-marker{display:none}
+details.cat>summary .no{font-family:var(--f-num);color:var(--accent);font-weight:500}
+details.cat>summary .nm{font-family:var(--f-display);font-weight:600;font-size:14.5px}
+details.cat>summary .v{text-align:right;font-family:var(--f-num);font-size:12.5px}
+details.cat>summary .v small{display:block;font-family:var(--f-body);font-size:10px;color:var(--muted)}
+details.cat>summary .v.t{font-weight:600;font-size:13.5px}
+details.cat>summary .ar{transition:transform .2s;color:var(--muted)}
+details.cat[open]>summary .ar{transform:rotate(90deg)}
+details.cat[open]>summary{border-bottom:1px solid var(--line);background:var(--soft)}
+@media (max-width:700px){details.cat>summary{grid-template-columns:30px minmax(0,1fr) 96px 16px}details.cat>summary .v.m,details.cat>summary .v.lb{display:none}}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{font:600 11px var(--f-body);color:var(--muted);text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--paper)}
+th.r,td.r{text-align:right}
+td{padding:6px 8px;border-bottom:1px solid var(--soft);vertical-align:top}
+td.c{font-family:var(--f-num);color:var(--muted);white-space:nowrap;font-size:11.5px}
+td.r{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+td.d{min-width:220px}
+td.d .note{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+td.est-cell{background:var(--est);color:var(--est-ink)}
+tr.sub td{font-weight:600;font-style:italic;background:var(--soft);color:var(--ink)}
+tr.ctot td{font-weight:600;border-top:1.5px solid var(--ink);border-bottom:0}
+tr.hide{display:none}
+mark{background:var(--accent);color:var(--accent-ink);padding:0 2px}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.ur{background:var(--paper);border:1px solid var(--line);padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ur h3{font-size:13.5px}
+.ur .k{font-family:var(--f-num);font-size:11px;color:var(--accent)}
+.ur table{font-size:11.5px}
+.ur .sum{display:flex;justify-content:space-between;gap:8px;font-size:12px;border-top:1.5px solid var(--ink);padding-top:6px}
+.ur .sum b{font-family:var(--f-num)}
+.notes{display:flex;flex-direction:column;gap:10px;max-width:78ch}
+.notes li{margin-bottom:6px}
+.flag{border-left:3px solid var(--est-ink);background:var(--est);color:var(--est-ink);padding:10px 12px}
+.foot{font-size:11.5px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<style>
+:root{--bad:#b3261e;--bad-bg:#fbe4e2;--overlay:rgba(20,26,30,.45)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bad:#ff8a80;--bad-bg:#3a1d1b;--overlay:rgba(0,0,0,.6)}}
+:root[data-theme="dark"]{--bad:#ff8a80;--bad-bg:#3a1d1b;--overlay:rgba(0,0,0,.6)}
+.status{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.status.live .dot{background:var(--ok)}
+.status.err .dot{background:var(--bad)}
+.kpis5{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@media (max-width:980px){.kpis5{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.v.bad{color:var(--bad)}
+.prog{height:5px;background:var(--soft);position:relative;min-width:60px}
+.prog i{position:absolute;inset:0 auto 0 0;background:var(--accent)}
+.prog.over i{background:var(--bad)}
+tr.it{cursor:pointer}
+tr.it:hover td{background:var(--soft)}
+tr.it:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+td.neg{color:var(--bad);font-weight:600}
+td.drawn{color:var(--accent)}
+th.grp{text-align:center;border-bottom:0;padding-bottom:0;color:var(--ink)}
+.shade{position:fixed;inset:0;background:var(--overlay);z-index:20}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--paper);z-index:21;display:flex;flex-direction:column;border-left:1.5px solid var(--ink);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.drawer header h3{font-size:16px}
+.drawer .body{overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:16px}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fgrid .full{grid-column:1/-1}
+.f{display:flex;flex-direction:column;gap:3px;min-width:0}
+.f label{font-size:11.5px;color:var(--muted)}
+.f input,.f select,.f textarea{font:inherit;font-size:13px;padding:7px 8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);width:100%}
+.f input.num{font-family:var(--f-num);text-align:right}
+.f textarea{min-height:56px;resize:vertical}
+.calc{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:var(--soft);padding:10px;font-size:12px}
+.calc b{display:block;font-family:var(--f-num);font-size:14px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.x{background:none;border:0;font-size:22px;line-height:1;color:var(--muted);cursor:pointer;padding:2px 6px}
+.dlist{display:flex;flex-direction:column}
+.drow{display:grid;grid-template-columns:82px 56px minmax(0,1fr) 96px 28px;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--soft);font-size:12.5px}
+.drow .amt{text-align:right;font-family:var(--f-num)}
+.tag{font-size:10.5px;padding:1px 6px;text-align:center}
+.tag.mat{background:var(--soft);color:var(--accent)}
+.tag.lab{background:var(--est);color:var(--est-ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 14px;font-size:13px;z-index:30}
+.confirm{border:1px solid var(--bad);background:var(--bad-bg);padding:10px;display:flex;flex-direction:column;gap:8px;font-size:12.5px}
+.empty-state{background:var(--paper);border:1px dashed var(--line);padding:28px;text-align:center;color:var(--muted)}
+.addline{padding:8px 12px}
+.cardfig{margin:0;display:flex;flex-direction:column;gap:4px}
+.figbtn{padding:0;border:1px solid var(--line);background:#fff;cursor:zoom-in;display:block;width:100%}
+.figbtn img{display:block;width:100%;height:auto}
+.cardfig figcaption{font-size:11px;color:var(--muted)}
+.zoom{position:fixed;inset:0;z-index:40;background:rgba(10,14,16,.92);display:flex;align-items:center;justify-content:center;padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.zoom img{max-width:100%;max-height:100%;object-fit:contain;background:#fff}
+.zoom .x{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:12px;color:#fff;font-size:30px}
+.pic{font-size:10px;padding:1px 5px;border:1px solid var(--accent);color:var(--accent);margin-left:4px;white-space:nowrap}
+.drawer{width:min(760px,100%)!important}
+.ledger-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:end}
+</style>
+<div class="wrap">
+<header class="sheet">
+  <div>
+    <h1>BOQ บ้าน คสล. 2 ชั้น + ดาดฟ้า + สระว่ายน้ำ</h1>
+    <div class="meta"><span>เจ้าของ: บจก. เนสซี วิลาส / บจก. วี เอส แอล เคพี</span><span>ต.เกาะพะงัน จ.สุราษฎร์ธานี</span><span>แบบ MUT "CIVIL" 1993 · RV01 ลว. 23.01.2026</span></div>
+    <div class="status" id="status" style="margin-top:8px"><span class="dot"></span><span id="statusTx">กำลังเชื่อมต่อฐานข้อมูล…</span></div>
+  </div>
+  <div class="stamp">
+    <span>BOQ</span><b>Rev.2</b>
+    <span>รายการ</span><b id="nItems">–</b>
+    <span>ใบเบิก</span><b id="nDraws">–</b>
+    <span>ราคา</span><b>หน้างานเกาะ</b>
+  </div>
+</header>
+
+<section class="kpis5" aria-label="สรุปงบและการเบิก">
+  <div class="kpi"><span class="l">งบ BOQ (ต้นทุนตรง)</span><span class="v" id="kBud">–</span><span class="s" id="kBudS">–</span></div>
+  <div class="kpi"><span class="l">เบิกค่าวัสดุแล้ว</span><span class="v" id="kDM">–</span><span class="s" id="kDMs">–</span></div>
+  <div class="kpi"><span class="l">เบิกค่าแรงแล้ว</span><span class="v" id="kDL">–</span><span class="s" id="kDLs">–</span></div>
+  <div class="kpi main"><span class="l">คงเหลือทั้งโครงการ</span><span class="v" id="kRem">–</span><span class="s" id="kRemS">–</span></div>
+  <div class="kpi"><span class="l">ใช้งบไปแล้ว</span><span class="v" id="kPct">–</span><div class="meter"><i id="kPctBar"></i></div><span class="s" id="kOver">–</span></div>
+</section>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" data-tab="boq" aria-selected="true">BOQ + เบิก + คงเหลือ</button>
+  <button role="tab" data-tab="ledger" aria-selected="false">ประวัติการเบิก</button>
+  <button role="tab" data-tab="price" aria-selected="false">สรุปราคาเสนอ</button>
+  <button role="tab" data-tab="to" aria-selected="false">ถอดปริมาณ (อ้างอิง)</button>
+  <button role="tab" data-tab="ur" aria-selected="false">ราคาต่อหน่วย (อ้างอิง)</button>
+</nav>
+
+<section id="tab-boq" class="tp" style="display:flex;flex-direction:column;gap:12px">
+  <div class="tools">
+    <input type="search" id="q" placeholder="ค้นหารายการ เช่น เหล็ก DB16, ไม้แบบ, สุขภัณฑ์">
+    <button class="btn" id="fAll" aria-pressed="true">ทั้งหมด</button>
+    <button class="btn" id="fDrawn" aria-pressed="false">มีการเบิก</button>
+    <button class="btn" id="fOver" aria-pressed="false">เบิกเกินงบ</button>
+    <button class="btn" id="expand">เปิดทุกหมวด</button>
+  </div>
+  <p class="hint" style="margin:0">กดที่รายการเพื่อแก้ไขปริมาณ ราคาวัสดุ/หน่วย ค่าแรง/หน่วย หรือบันทึกการเบิก — ทุกอย่างบันทึกถาวรและทุกคนที่เปิดหน้านี้เห็นพร้อมกัน</p>
+  <div id="boq"><div class="empty-state">กำลังโหลดรายการ BOQ…</div></div>
+  <div class="empty" id="noHit" hidden>ไม่พบรายการที่ตรงกับตัวกรอง</div>
+</section>
+
+<section id="tab-ledger" class="tp panel" hidden>
+  <h2>ประวัติการเบิกทั้งหมด</h2>
+  <div class="ledger-tools" style="margin:10px 0">
+    <div class="f"><label for="lType">ประเภท</label><select id="lType"><option value="">ทั้งหมด</option><option value="mat">ค่าวัสดุ</option><option value="lab">ค่าแรง</option></select></div>
+    <div class="f"><label for="lFrom">ตั้งแต่วันที่</label><input type="date" id="lFrom"></div>
+    <div class="f"><label for="lTo">ถึงวันที่</label><input type="date" id="lTo"></div>
+    <div class="f" style="flex:1 1 200px"><label for="lQ">ค้นหา (เลขที่ใบเบิก/ผู้รับเงิน/รายการ)</label><input id="lQ" type="search"></div>
+  </div>
+  <div class="tw"><table id="ledT"></table></div>
+</section>
+
+<section id="tab-price" class="tp grid2" hidden>
+  <div class="panel">
+    <h2>สัดส่วนงบแยกหมวด</h2>
+    <div class="catbars" id="catbars"></div>
+  </div>
+  <div class="panel">
+    <h2>จากต้นทุนถึงราคาเสนอ</h2>
+    <div class="markup">
+      <div class="mrow"><span>ต้นทุนตรงรวม</span><span></span><span class="a" id="mDirect"></span></div>
+      <div class="mrow"><label for="pCont">เผื่อเหลือเผื่อขาด %</label><input id="pCont" type="number" step="0.5" min="0"><span class="a" id="mCont"></span></div>
+      <div class="mrow"><label for="pOH">ค่าดำเนินการ + กำไร %</label><input id="pOH" type="number" step="0.5" min="0"><span class="a" id="mOH"></span></div>
+      <div class="mrow"><span>รวมก่อน VAT</span><span></span><span class="a" id="mPre"></span></div>
+      <div class="mrow"><label for="pVat">VAT %</label><input id="pVat" type="number" step="0.5" min="0"><span class="a" id="mVat"></span></div>
+      <div class="mrow tot"><span>ราคารวมทั้งสิ้น</span><span></span><span class="a" id="mGrand"></span></div>
+      <div class="mrow"><label for="pArea">พื้นที่ใช้สอย (ตร.ม.)</label><input id="pArea" type="number" step="0.1" min="0"><span class="a" id="mSqm"></span></div>
+    </div>
+    <p class="hint">แก้ % แล้วบันทึกให้ทุกคนเห็นเหมือนกัน</p>
+  </div>
+</section>
+<section id="tab-to" class="tp" hidden><p class="hint">ปริมาณตามการถอดแบบ Rev.2 (ค่าตั้งต้น) — ถ้าแก้ปริมาณในแท็บ BOQ ตัวเลขชุดนี้จะไม่เปลี่ยนตาม</p><div id="toT" style="display:flex;flex-direction:column;gap:12px"></div></section>
+<section id="tab-ur" class="tp" hidden><p class="hint">การแตกราคาต่อหน่วย Rev.2 (ค่าตั้งต้น)</p><div class="cards" id="urT"></div></section>
+<p class="foot">ไฟล์ต้นฉบับพร้อมสูตร: BOQ_บ้านคสล2ชั้น_สระว่ายน้ำ_RV01_rev2.xlsx</p>
+</div>
+
+<div class="shade" id="shade" hidden></div>
+<div class="zoom" id="zoom" hidden><img id="zImg" alt=""><button class="x" id="zClose" aria-label="ปิด">×</button></div>
+<aside class="drawer" id="drawer" hidden aria-modal="true" role="dialog" aria-labelledby="dTitle">
+  <header><div><span class="k num" id="dCode" style="color:var(--accent);font-size:12px"></span><h3 id="dTitle">รายการ</h3></div><button class="x" id="dClose" aria-label="ปิด">×</button></header>
+  <div class="body">
+    <figure class="cardfig" id="dFig" hidden><button type="button" class="figbtn" id="dZoom" aria-label="ขยายภาพ"><img id="dImg" alt="ภาพประกอบ 3D วิธีคำนวณ และวัสดุที่ใช้"></button><figcaption>ภาพประกอบ · วิธีคำนวณ · วัสดุที่ใช้ — กดที่ภาพเพื่อขยาย</figcaption></figure>
+    <form id="fItem" class="fgrid">
+      <div class="f full"><label for="iD">รายการ</label><input id="iD" required></div>
+      <div class="f"><label for="iCode">ลำดับ</label><input id="iCode"></div>
+      <div class="f"><label for="iU">หน่วย</label><input id="iU"></div>
+      <div class="f"><label for="iQ">ปริมาณ</label><input id="iQ" class="num" type="number" step="any"></div>
+      <div class="f"><label for="iS">สถานะราคา</label><select id="iS"><option>ยืนยัน</option><option>ประมาณ</option><option>ประมาณ-เว็บ</option></select></div>
+      <div class="f"><label for="iMU">ค่าวัสดุ / หน่วย</label><input id="iMU" class="num" type="number" step="any"></div>
+      <div class="f"><label for="iLU">ค่าแรง / หน่วย</label><input id="iLU" class="num" type="number" step="any"></div>
+      <div class="f full"><label for="iN">หมายเหตุ / วิธีคิด</label><textarea id="iN"></textarea></div>
+      <div class="calc full"><span>งบวัสดุ<b id="cM">–</b></span><span>งบค่าแรง<b id="cL">–</b></span><span>รวม<b id="cT">–</b></span></div>
+      <div class="row full"><button class="btn pri" type="submit" id="iSave">บันทึกการแก้ไข</button><button class="btn danger" type="button" id="iDel">ลบรายการนี้</button></div>
+      <div class="confirm full" id="iDelC" hidden><span>ลบรายการนี้และประวัติการเบิกของรายการนี้ทั้งหมด? กู้คืนไม่ได้</span><div class="row"><button class="btn danger" type="button" id="iDelYes">ลบถาวร</button><button class="btn" type="button" id="iDelNo">ยกเลิก</button></div></div>
+    </form>
+
+    <div class="calc"><span>คงเหลือค่าวัสดุ<b id="rM">–</b></span><span>คงเหลือค่าแรง<b id="rL">–</b></span><span>คงเหลือรวม<b id="rT">–</b></span></div>
+
+    <form id="fDraw" class="fgrid" style="border-top:1.5px solid var(--ink);padding-top:12px">
+      <h3 class="full" style="font-size:14px">บันทึกการเบิก</h3>
+      <div class="f"><label for="wT">ประเภท</label><select id="wT"><option value="mat">ค่าวัสดุ</option><option value="lab">ค่าแรง</option></select></div>
+      <div class="f"><label for="wDate">วันที่</label><input id="wDate" type="date" required></div>
+      <div class="f"><label for="wQ">ปริมาณที่เบิก (ไม่บังคับ)</label><input id="wQ" class="num" type="number" step="any"></div>
+      <div class="f"><label for="wP">ราคา/หน่วยจริง (ไม่บังคับ)</label><input id="wP" class="num" type="number" step="any"></div>
+      <div class="f"><label for="wA">จำนวนเงิน (บาท)</label><input id="wA" class="num" type="number" step="any" required></div>
+      <div class="f"><label for="wRef">เลขที่ใบเบิก / ใบส่งของ</label><input id="wRef"></div>
+      <div class="f full"><label for="wPay">ผู้รับเงิน / ร้านค้า / ช่าง</label><input id="wPay"></div>
+      <div class="f full"><label for="wNote">หมายเหตุ</label><input id="wNote"></div>
+      <div class="row full"><button class="btn pri" type="submit" id="wSave">บันทึกการเบิก</button><span class="hint" style="margin:0">กรอกปริมาณ × ราคา/หน่วย แล้วจำนวนเงินคำนวณให้อัตโนมัติ</span></div>
+    </form>
+
+    <div><h3 style="font-size:14px;margin-bottom:6px">ประวัติการเบิกรายการนี้</h3><div class="dlist" id="dList"></div></div>
+  </div>
+</aside>
+<div class="toast" id="toast" hidden></div>
+<script>
+/* Adapter: ทำให้หน้าเว็บ BOQ เดิมใช้ Google Sheet (ผ่าน Apps Script) แทนฐานข้อมูลของ Claude */
+(function(){
+  const SITE = "<?= SITE ?>";
+  window.BOQ_IMG = it => SITE + "cards/" + encodeURIComponent(it.code) + ".jpg";
+  let cache = {}, subs = [], pin = "";
+  try { pin = localStorage.getItem("boqPin") || ""; } catch (e) {}
+  const call = (fn, ...a) => new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...a));
+  const snapColl = c => ({ docs: Object.keys(cache[c] || {}).map(id => ({ id, data: () => cache[c][id] })) });
+  const snapDoc = (c, id) => ({ exists: !!(cache[c] && cache[c][id]), data: () => (cache[c] || {})[id] });
+  const emit = () => subs.forEach(s => { try { s.cb(s.id ? snapDoc(s.c, s.id) : snapColl(s.c)); } catch (e) { console.error(e); } });
+  let busy = false;
+  async function refresh() { if (busy) return; busy = true; try { cache = JSON.parse(await call("getAll")); emit(); } catch (e) { subs.forEach(s => s.err && s.err(e)); } finally { busy = false; } }
+  function askPin() {
+    return new Promise(res => {
+      const o = document.createElement("div");
+      o.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:99999";
+      o.innerHTML = '<form id="pinForm" style="background:#fff;color:#1d2328;padding:18px 20px;border-radius:8px;width:min(320px,90vw);font-family:inherit"><b style="font-size:16px">ใส่รหัสแก้ไข (PIN)</b><p style="margin:6px 0 10px;font-size:13px;color:#5d666d">ต้องใช้รหัสเพื่อบันทึก/แก้ไขข้อมูล · ดูอย่างเดียวไม่ต้องใช้</p><input type="password" inputmode="numeric" style="width:100%;padding:9px;font-size:16px;border:1px solid #ccc;border-radius:4px"><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button type="button" data-x style="padding:8px 12px">ยกเลิก</button><button style="padding:8px 14px;background:#1f5f8b;color:#fff;border:0;border-radius:4px">ตกลง</button></div></form>';
+      document.body.appendChild(o); const i = o.querySelector("input"); i.focus();
+      o.querySelector("[data-x]").onclick = () => { o.remove(); res(null); };
+      o.querySelector("form").onsubmit = e => { e.preventDefault(); o.remove(); res(i.value); };
+    });
+  }
+  async function write(op, c, id, data) {
+    for (let t = 0; t < 3; t++) {
+      try { const r = await call("write", op, c, id || "", data ? JSON.stringify(data) : "", pin); await refresh(); return r; }
+      catch (e) {
+        if (String(e && e.message || e).indexOf("PIN") < 0) throw e;
+        const p = await askPin(); if (p === null) throw new Error("ยกเลิก — ไม่ได้ใส่รหัสแก้ไข");
+        pin = p; try { localStorage.setItem("boqPin", p); } catch (x) {}
+      }
+    }
+    throw new Error("รหัสแก้ไขไม่ถูกต้อง");
+  }
+  const split = p => { const a = p.split("/"); return [a[0], a[1]]; };
+  const db = {
+    collection: c => ({
+      onSnapshot(cb, err) { subs.push({ c, cb, err }); if (cache[c]) cb(snapColl(c)); return () => {}; },
+      async add(d) { const id = await write("add", c, "", d); return { id }; }
+    }),
+    doc: p => { const [c, id] = split(p); return {
+      onSnapshot(cb, err) { subs.push({ c, id, cb, err }); if (cache[c]) cb(snapDoc(c, id)); return () => {}; },
+      update: d => write("update", c, id, d), set: d => write("set", c, id, d), delete: () => write("delete", c, id)
+    }; }
+  };
+  window.claude = { use: async n => n === "db" ? (refresh(), db) : null };
+  setInterval(() => { if (!document.hidden) refresh(); }, 20000);
+})();
+
+</script>
+<script>const REFDATA={"to": [{"s": "งานดิน", "rows": [{"d": "ขุดดินหลุมฐานราก (เผื่อทำงาน 0.2 ม./ด้าน ลึก 1.25)", "f": "8*1.6*1.6*1.25+5*1.4*1.4*1.25", "v": 37.85, "u": "ลบ.ม.", "ref": "S-03"}, {"d": "ขุดร่องคานคอดิน (ยาวสุทธิ ~60 ม.)", "f": "60*0.5*0.6", "v": 18, "u": "ลบ.ม.", "ref": "S-04"}, {"d": "ขุดดินสระว่ายน้ำ (7.4×3.7 ลึก 1.85)", "f": "7.4*3.7*1.85", "v": 50.65, "u": "ลบ.ม.", "ref": "A7-02"}, {"d": "ขุดดินบ่อนั่งเล่นจม", "f": "3.6*2.9*0.7", "v": 7.31, "u": "ลบ.ม.", "ref": "A7-01"}, {"d": "รวมดินขุด", "f": "[exc_ft]+[exc_gb]+[exc_pool]+[exc_sunk]", "v": 113.81, "u": "ลบ.ม.", "ref": ""}, {"d": "ถมกลับบดอัด (ดินขุดฐาน+ร่อง หักปริมาตร คสล. + รอบสระ)", "f": "[exc_ft]+[exc_gb]-([c_ft1]+[c_ft2]+[c_ped]+[c_gb])+10.6", "v": 52.04, "u": "ลบ.ม.", "ref": ""}, {"d": "ดินเหลือขนทิ้ง (เผื่อฟู 25%)", "f": "([exc_tot]-[backfill])*1.25", "v": 77.21, "u": "ลบ.ม.", "ref": ""}]}, {"s": "งานฐานราก (S-03 / S-07)", "rows": [{"d": "คอนกรีตฐาน 1.20×1.20×0.40 × 8 ฐาน (A1,A2,B1,B2,C1,C2,D1,D2)", "f": "8*1.2*1.2*0.4", "v": 4.61, "u": "ลบ.ม.", "ref": "S-03"}, {"d": "คอนกรีตฐาน 1.00×1.00×0.40 × 5 ฐาน (A3,บันได,C3,E1,E2)", "f": "5*1.0*1.0*0.4", "v": 2, "u": "ลบ.ม.", "ref": "S-03"}, {"d": "คอนกรีตหยาบ / ทรายรองฐาน หนา 0.05", "f": "(8*1.2*1.2+5*1*1)*0.05", "v": 0.83, "u": "ลบ.ม.", "ref": "S-07"}, {"d": "คอนกรีตตอม่อ 0.25×0.25 สูง 0.80 × 13 ต้น", "f": "13*0.25*0.25*0.8", "v": 0.65, "u": "ลบ.ม.", "ref": "S-08"}, {"d": "เหล็ก DB16 ฐานราก (ฐานใหญ่ 8+8 เส้น×1.65 ม. / ฐานเล็ก 5+5 เส้น×1.45 ม.) +5%", "f": "(8*16*1.65+5*10*1.45)*1.578*1.05", "v": 470.06, "u": "กก.", "ref": "S-07"}, {"d": "เหล็ก DB16 ตอม่อ C1 (6 เส้น×0.8 ม.×8 ต้น) +10%", "f": "8*0.8*6*1.578*1.1", "v": 66.65, "u": "กก.", "ref": ""}, {"d": "เหล็ก DB12 ตอม่อ C2 (6 เส้น×0.8 ม.×5 ต้น) +10%", "f": "5*0.8*6*0.888*1.1", "v": 23.44, "u": "กก.", "ref": ""}, {"d": "เหล็ก RB6 ปลอกตอม่อ (@0.10/@0.15 ยาวปลอก 0.70)", "f": "(8*0.8/0.1+5*0.8/0.15)*0.7*0.222*1.05", "v": 14.79, "u": "กก.", "ref": ""}, {"d": "ไม้แบบข้างฐานราก", "f": "8*4.8*0.4+5*4.0*0.4", "v": 23.36, "u": "ตร.ม.", "ref": ""}, {"d": "ไม้แบบตอม่อ", "f": "13*4*0.25*0.8", "v": 10.4, "u": "ตร.ม.", "ref": ""}]}, {"s": "งานเสา คสล. 0.20×0.20 (S-08)", "rows": [{"d": "ความยาวเสา C1 (ชั้น1 8 ต้น×3.75 + ชั้น2 6 ต้น×3.25)", "f": "8*3.75+6*3.25", "v": 49.5, "u": "ม.", "ref": ""}, {"d": "ความยาวเสา C2 (ชั้น1 3 ต้น×3.75 + ชั้น2 2 ต้น×3.25)", "f": "3*3.75+2*3.25", "v": 17.75, "u": "ม.", "ref": ""}, {"d": "คอนกรีตเสา", "f": "([len_c1]+[len_c2])*0.2*0.2", "v": 2.69, "u": "ลบ.ม.", "ref": ""}, {"d": "เหล็ก DB16 เสา C1 (6 เส้น) +10% ทาบ", "f": "[len_c1]*6*1.578*1.1", "v": 515.53, "u": "กก.", "ref": ""}, {"d": "เหล็ก DB12 เสา C2 (6 เส้น) +10% ทาบ", "f": "[len_c2]*6*0.888*1.1", "v": 104.03, "u": "กก.", "ref": ""}, {"d": "เหล็ก RB6 ปลอกเสา (C1@0.10, C2@0.15 ยาวปลอก 0.70)", "f": "([len_c1]/0.1+[len_c2]/0.15)*0.7*0.222*1.05", "v": 100.08, "u": "กก.", "ref": ""}, {"d": "ไม้แบบเสา (0.80 ตร.ม./ม.)", "f": "([len_c1]+[len_c2])*0.8", "v": 53.8, "u": "ตร.ม.", "ref": ""}]}, {"s": "งานคาน คสล. (S-04/S-05/S-06/S-09)", "rows": [{"d": "ความยาว B1 0.25×0.50 (ชั้น1 18.0 + ชั้น2 20.8 + ดาดฟ้า 20.7)", "f": "18+20.8+20.7", "v": 59.5, "u": "ม.", "ref": ""}, {"d": "ความยาว B2 0.20×0.50 (ชั้น1 33.3 + ชั้น2 15.7)", "f": "33.3+15.7", "v": 49, "u": "ม.", "ref": ""}, {"d": "ความยาว B3 0.20×0.40 (ชั้น1 15.1 + ชั้น2 10.2 + ดาดฟ้า 6.4)", "f": "15.1+10.2+6.4", "v": 31.7, "u": "ม.", "ref": ""}, {"d": "ความยาว B4 0.20×0.40 (ชั้น1 4.5 + ชั้น2 4.5 + ดาดฟ้า 18.0)", "f": "4.5+4.5+18", "v": 27, "u": "ม.", "ref": ""}, {"d": "คอนกรีตคานชั้น 1 (คานคอดิน)", "f": "18*0.25*0.5+33.3*0.2*0.5+15.1*0.2*0.4+4.5*0.2*0.4", "v": 7.15, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตคานชั้น 2", "f": "20.8*0.25*0.5+15.7*0.2*0.5+10.2*0.2*0.4+4.5*0.2*0.4", "v": 5.35, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตคานดาดฟ้า", "f": "20.7*0.25*0.5+6.4*0.2*0.4+18*0.2*0.4", "v": 4.54, "u": "ลบ.ม.", "ref": ""}, {"d": "เหล็ก DB16 คาน (B1 เทียบ 7.2 เส้น, B4 9 เส้น) +10%", "f": "([len_b1]*7.2+[len_b4]*9)*1.578*1.1", "v": 1165.42, "u": "กก.", "ref": ""}, {"d": "เหล็ก DB12 คาน (B2 8 เส้น, B3 9 เส้น) +10%", "f": "([len_b2]*8+[len_b3]*9)*0.888*1.1", "v": 661.59, "u": "กก.", "ref": ""}, {"d": "เหล็ก RB6 ปลอกคาน @0.15", "f": "([len_b1]*1.38+[len_b2]*1.28+([len_b3]+[len_b4])*1.08)/0.15*0.222*1.05", "v": 323.58, "u": "กก.", "ref": ""}, {"d": "ไม้แบบคานชั้น 1 (ข้าง 2 ด้าน)", "f": "18*1.0+33.3*1.0+15.1*0.8+4.5*0.8", "v": 66.98, "u": "ตร.ม.", "ref": ""}, {"d": "ไม้แบบคานชั้น 2 (ข้าง+ท้อง)", "f": "20.8*1.25+15.7*1.2+10.2*1.0+4.5*1.0", "v": 59.54, "u": "ตร.ม.", "ref": ""}, {"d": "ไม้แบบคานดาดฟ้า (ข้าง+ท้อง หักพื้น)", "f": "20.7*1.1+(18+6.4)*0.85", "v": 43.51, "u": "ตร.ม.", "ref": ""}, {"d": "ทรายรองท้องคานคอดิน 0.05", "f": "70.9*0.25*0.05", "v": 0.89, "u": "ลบ.ม.", "ref": ""}]}, {"s": "งานพื้น คสล. (S-04/S-05/S-06/S-08)", "rows": [{"d": "พื้น S1 หนา 0.13 หล่อในที่ (ห้องน้ำ/ชานพัก ชั้น1 13.57 + ชั้น2 9.0)", "f": "9+1.0+3.57+9", "v": 22.57, "u": "ตร.ม.", "ref": ""}, {"d": "พื้น S2 หนา 0.15 (กันสาดชั้น1 1.2 + ดาดฟ้าบันได 4.4 + กันสาด 1.21)", "f": "1.2+4.4+1.21", "v": 6.81, "u": "ตร.ม.", "ref": ""}, {"d": "พื้น S3 หนา 0.15 ดาดฟ้า 4.50×8.10", "f": "4.5*8.1", "v": 36.45, "u": "ตร.ม.", "ref": ""}, {"d": "แผ่นพื้นสำเร็จ PS ชั้น 1 (B–C 16.65 + C–D 15.84 + ลานสระ 13.24)", "f": "16.65+15.84+11.2+2.04", "v": 45.73, "u": "ตร.ม.", "ref": ""}, {"d": "แผ่นพื้นสำเร็จ PS ชั้น 2 (B–C 16.65 + C–D ระเบียง 16.08)", "f": "16.65+16.08", "v": 32.73, "u": "ตร.ม.", "ref": ""}, {"d": "คอนกรีตพื้น S1", "f": "[a_s1]*0.13", "v": 2.93, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตพื้น S2+S3", "f": "([a_s2]+[a_s3])*0.15", "v": 6.49, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตทับหน้าแผ่นพื้น 0.05", "f": "([a_ps1]+[a_ps2])*0.05", "v": 3.92, "u": "ลบ.ม.", "ref": ""}, {"d": "เหล็ก RB9 พื้น (S1 7.07, S2/S3 3.33 กก./ตร.ม.) +10% + shear key 20 กก.", "f": "([a_s1]*7.07+([a_s2]+[a_s3])*3.33)*1.1+20", "v": 353.99, "u": "กก.", "ref": ""}, {"d": "เหล็ก DB12 พื้น (S2 @0.20 4.44 / S3 @0.15 5.92 กก./ตร.ม.) +10%", "f": "([a_s2]*4.44+[a_s3]*5.92)*1.1", "v": 270.62, "u": "กก.", "ref": ""}, {"d": "Wire mesh 4 มม. @0.20 (+10% ทาบ)", "f": "([a_ps1]+[a_ps2])*1.1", "v": 86.31, "u": "ตร.ม.", "ref": ""}, {"d": "ไม้แบบท้องพื้นหล่อในที่ + ขอบพื้นดาดฟ้า", "f": "[a_s1]+[a_s2]+[a_s3]+29.2*0.15", "v": 70.21, "u": "ตร.ม.", "ref": ""}]}, {"s": "งานบันได คสล. 38 ขั้น 4 ช่วง (S-08)", "rows": [{"d": "คอนกรีตบันได (ขั้น 38×1.0×0.44×0.10 + คาน B5 12 ม. + ชานพัก 3)", "f": "38*1.0*0.44*0.1+12*0.3*0.4+3*2.0*0.12", "v": 3.83, "u": "ลบ.ม.", "ref": ""}, {"d": "เหล็ก DB12 บันได (ขั้นละ 3 เส้น + B5 6 เส้น) +10%", "f": "(38*3*1.0+12*6)*0.888*1.1", "v": 181.68, "u": "กก.", "ref": ""}, {"d": "เหล็ก RB9 บันได + ชานพัก", "f": "38*1.2*0.499*1.1+3*2.0*7.07", "v": 67.45, "u": "กก.", "ref": ""}, {"d": "เหล็ก RB6 ปลอก B5", "f": "12*1.08/0.15*0.222*1.05", "v": 20.14, "u": "กก.", "ref": ""}, {"d": "ไม้แบบบันได", "f": "38*0.9+12*1.1+3*2.0", "v": 53.4, "u": "ตร.ม.", "ref": ""}]}, {"s": "งานโครงสร้างอื่น", "rows": [{"d": "คอนกรีตผนัง คสล. หินตกแต่ง 2.78×3.03×0.20 + ฐาน", "f": "2.78*3.03*0.2+2.78*0.8*0.3", "v": 2.35, "u": "ลบ.ม.", "ref": "A3-01/02"}, {"d": "เหล็ก DB12 ผนังหิน (~60 กก./ลบ.ม.)", "f": "[c_sw]*60", "v": 141.11, "u": "กก.", "ref": ""}, {"d": "ไม้แบบผนังหิน", "f": "2*2.78*3.03+2*0.2*3.03+2*2.78*0.3", "v": 19.73, "u": "ตร.ม.", "ref": ""}, {"d": "เสาเหล็กกลม Ø190.7×4.5 มม. (20.7 กก./ม.) 2 ต้น×3.25 + เพลต", "f": "2*3.25*20.7+4*0.3*0.3*0.012*7850", "v": 168.46, "u": "กก.", "ref": "A3-04"}]}, {"s": "งานสระว่ายน้ำ (A7-01/A7-02)", "rows": [{"d": "คอนกรีตพื้นสระ 7.00×3.27×0.25", "f": "7.0*3.27*0.25", "v": 5.72, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตผนังสระ (เส้นรอบ 18.7×1.5×0.27)", "f": "18.7*1.5*0.27", "v": 7.57, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตรางน้ำล้น + ม้านั่ง/ขั้น/ตอม่อนั่ง", "f": "10*1.2*0.2+10*0.4*0.15+2.2", "v": 5.2, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตบ่อนั่งเล่นจม (SP1/PW1)", "f": "7.8*0.15+12.3*0.5*0.15", "v": 2.09, "u": "ลบ.ม.", "ref": ""}, {"d": "คอนกรีตหยาบ / ทรายรองพื้นสระ 0.05", "f": "7.0*3.27*0.05", "v": 1.14, "u": "ลบ.ม.", "ref": ""}, {"d": "เหล็ก DB12 สระ+บ่อจม (~90/80 กก./ลบ.ม. — แบบไม่มีรายละเอียด)", "f": "([c_pb]+[c_pw]+[c_pc])*90+[c_sunk]*80", "v": 1832.04, "u": "กก.", "ref": ""}, {"d": "ไม้แบบสระ (ผนัง 2 หน้า + ราง + ม้านั่ง + ขอบ) + บ่อจม", "f": "18.7*1.5*2+10*1.2*2+6+3.9+20*0.25+12.3*0.5*2+2", "v": 109.3, "u": "ตร.ม.", "ref": ""}, {"d": "กระเบื้องสระ (พื้น 10.74 + ผนัง 26.31 + ม้านั่ง/ขั้น/ตอม่อ)", "f": "(6.05-2.1)*2.72+2*(6.05+2.72)*1.5+2.1*2.72+2.72*1.25+2*2.72*0.65+2*(3.1416*0.5*1.25+0.2)", "v": 54.03, "u": "ตร.ม.", "ref": ""}, {"d": "กันซึมสระ (ผิวกระเบื้อง + รางน้ำล้น)", "f": "[tile_pool]+10*1.0", "v": 64.03, "u": "ตร.ม.", "ref": ""}, {"d": "กันซึมบ่อนั่งเล่นจม", "f": "7.8+12.3*0.5", "v": 13.95, "u": "ตร.ม.", "ref": ""}, {"d": "ขอบสระ (Coping)", "f": "2*(6.05+2.72)", "v": 17.54, "u": "ม.", "ref": ""}, {"d": "พื้นที่สระสำหรับคิดค่าแรงโครงสร้าง", "f": "7.0*3.27", "v": 22.89, "u": "ตร.ม.", "ref": ""}]}, {"s": "งานผนัง (A2-01/A2-02, ผนังสูง ชั้น1 2.75–3.25 / ชั้น2 2.75)", "rows": [{"d": "ผนังภายนอกชั้น 1 (ความยาว 33.06 ม.)", "f": "4.5*2.75+2.0*3.25+5.7*2.75+2.4*3.25+4.04*3.25+2.0*3.25+1.66*2.75+1.93*3.25+2.4*3.25+6.43*3.25", "v": 101.52, "u": "ตร.ม.", "ref": ""}, {"d": "ผนังภายนอกชั้น 2 (ความยาว 24.40 ม.)", "f": "24.4*2.75", "v": 67.1, "u": "ตร.ม.", "ref": ""}, {"d": "หักช่องเปิดผนังนอก (D1 14.04 + D2 11.18 + D3 4.68 + W3×2 + W2)", "f": "14.04+11.18+4.68+1.35+1.35+1.8", "v": 34.4, "u": "ตร.ม.", "ref": ""}, {"d": "ผนังภายนอกสุทธิ", "f": "[w1x]+[w2x]-[opx]", "v": 134.22, "u": "ตร.ม.", "ref": ""}, {"d": "ผนังภายในชั้น 1 (B 3.64 + WC 3.72 + ผนังบันได 2.04)", "f": "(3.64+3.72+2.04)*2.75", "v": 25.85, "u": "ตร.ม.", "ref": ""}, {"d": "ผนังภายในชั้น 2 (B 3.60 + กั้นครัว 1.20 + ผนังบันได 4.04)", "f": "(3.6+1.2+4.04)*2.75", "v": 24.31, "u": "ตร.ม.", "ref": ""}, {"d": "หักช่องเปิดผนังใน (D3 4.68 + D4×2 4.32 + W3 1.35)", "f": "4.68+2*2.16+1.35", "v": 10.35, "u": "ตร.ม.", "ref": ""}, {"d": "ผนังภายในสุทธิ", "f": "[w1i]+[w2i]-[opi]", "v": 39.81, "u": "ตร.ม.", "ref": ""}, {"d": "เสาเอ็น-ทับหลัง (ผนัง 75.7 + ประตู 3 ด้าน + หน้าต่าง 4 ด้าน)", "f": "75.7+(5.4+2*2.6)+(4.3+2*2.6)+2*(1.8+2*2.6)+2*(0.9+2*2.4)+(1.2+1.5)*2+3*(0.9+1.5)*2", "v": 141, "u": "ม.", "ref": ""}, {"d": "ฉาบปูน (ผนังนอก 2 หน้า + ผนังใน 2 หน้า + แถบขอบพื้น/คาน)", "f": "2*[wx]+2*[wi]+29.2*0.5*2", "v": 377.25, "u": "ตร.ม.", "ref": ""}, {"d": "กระเบื้องผนังห้องน้ำ ชั้น1 33.48 + ชั้น2 20.28 + ผนังครัว 2.34", "f": "(2*(3.64+2.0)+2*(0.75+1.21))*2.4-3+2*(2.85+2.0)*2.4-3+2.4*0.6+1.5*0.6", "v": 56.1, "u": "ตร.ม.", "ref": ""}, {"d": "ทาสีภายนอก (ผนังนอก + แถบขอบพื้น/คาน)", "f": "[wx]+29.2*0.5*2", "v": 163.41, "u": "ตร.ม.", "ref": ""}, {"d": "ทาสีภายใน (ผนังนอกด้านใน + ผนังใน 2 หน้า − กระเบื้อง)", "f": "[wx]+2*[wi]-[wtile]", "v": 157.74, "u": "ตร.ม.", "ref": ""}, {"d": "กรุหินผนังตกแต่ง 2 หน้า + สัน", "f": "2*2.78*3.03+2*0.2*3.03+2.78*0.2", "v": 18.61, "u": "ตร.ม.", "ref": ""}, {"d": "กรุไม้จริงเสาหน้าบ้าน (0.30×4 ด้าน×3.25)", "f": "0.3*4*3.25", "v": 3.9, "u": "ตร.ม.", "ref": "A3-04"}]}, {"s": "งานพื้นผิว / ฝ้า", "rows": [{"d": "พื้น F1 ชั้น 1 (ห้องนอน 4.5×3.7 + นั่งเล่น/ครัว 6.43×2.4)", "f": "4.5*3.7+6.43*2.4", "v": 32.08, "u": "ตร.ม.", "ref": ""}, {"d": "พื้น F1 ชั้น 2 (ห้องนอน 4.5×3.7 + ครัว 1.65×2.0)", "f": "4.5*3.7+1.65*2.0", "v": 19.95, "u": "ตร.ม.", "ref": ""}, {"d": "พื้น F2 ห้องน้ำ (ชั้น1 3.64×2 + WC + ทางเดิน / ชั้น2 2.85×2)", "f": "3.64*2.0+0.75*1.21+0.86*2.0+2.85*2.0", "v": 15.61, "u": "ตร.ม.", "ref": ""}, {"d": "พื้นระเบียงชั้น 2 (6.50×2.40)", "f": "6.5*2.4", "v": 15.6, "u": "ตร.ม.", "ref": ""}, {"d": "พื้นลานสระ (6.50×3.50 หักบ่อจม+กรวด)", "f": "6.5*3.5-(1.5+2*0.8)*2.3", "v": 15.62, "u": "ตร.ม.", "ref": ""}, {"d": "บันได ลูกนอน 0.27 + ลูกตั้ง 0.18 × 38 ขั้น + ชานพัก 2 แห่ง", "f": "38*1.0*(0.27+0.18)+2*2.0", "v": 21.1, "u": "ตร.ม.", "ref": ""}, {"d": "พื้นขัดมัน F3 บ่อนั่งเล่นจม", "f": "1.5*2.3", "v": 3.45, "u": "ตร.ม.", "ref": ""}, {"d": "โรยกรวดรอบบ่อจม", "f": "2*0.8*2.3", "v": 3.68, "u": "ตร.ม.", "ref": ""}, {"d": "พื้นขัดหยาบ F4 ดาดฟ้า (4.5×8.1 + ชานบันไดบน)", "f": "36.45+4.4", "v": 40.85, "u": "ตร.ม.", "ref": ""}, {"d": "บัวเชิงผนังกระเบื้อง สูง 10 ซม.", "f": "16.4+17.7+16.4+7.3", "v": 57.8, "u": "ม.", "ref": ""}, {"d": "กันซึมพื้นห้องน้ำ + ระเบียง", "f": "[f2]+[balc]", "v": 31.21, "u": "ตร.ม.", "ref": ""}, {"d": "กันซึมดาดฟ้า (S3 + S2)", "f": "[a_s3]+[a_s2]-1.2", "v": 42.06, "u": "ตร.ม.", "ref": ""}, {"d": "ฝ้า C1 (ชั้น1 32.08 + ชั้น2 19.95 + ใต้หลังคาระเบียง 10.8)", "f": "[f1]+[f1b]+4.5*2.4", "v": 62.83, "u": "ตร.ม.", "ref": ""}, {"d": "ฝ้า C2 กันชื้น (ห้องน้ำ)", "f": "[f2]", "v": 15.61, "u": "ตร.ม.", "ref": ""}, {"d": "นั่งร้านภายนอก (เส้นรอบ 29.2 × สูง 8.05)", "f": "29.2*8.05", "v": 235.06, "u": "ตร.ม.", "ref": ""}, {"d": "พื้นที่โครงสร้างสำหรับค่าแรง คสล. (ชั้น1 60.5 + ชั้น2 41.73 + ดาดฟ้า 42.06 + บันได 16.2)", "f": "([a_s1]-9+1.2+[a_ps1])+(9+[a_ps2])+([a_s3]+[a_s2]-1.2)+2*2.0*4.04", "v": 160.45, "u": "ตร.ม.", "ref": ""}]}], "ur": [{"k": "AAC", "t": "ก่อผนังอิฐมวลเบา 7.5 ซม. (ต่อ ตร.ม.)", "comp": [{"d": "อิฐมวลเบา 7.5×20×60 ซม. (8.33 ก้อน +5%)", "q": 8.75, "u": "ก้อน", "p": 35, "a": 306.25, "src": "เว็บ HomePro 24–43 บ./ก้อน → เกาะ ~35"}, {"d": "ปูนก่ออิฐมวลเบา (Thin bed)", "q": 0.09, "u": "ถุง", "p": 280, "a": 25.2, "src": "2569×1.35 ประมาณ"}], "mat": 331.45, "lab": 150, "labsrc": "ค่าแรงก่ออิฐ price book", "tot": 481.45}, {"k": "PLAS", "t": "ฉาบปูนเรียบ หนา ~1.2 ซม. (ต่อ ตร.ม.)", "comp": [{"d": "ปูนก่อ-ฉาบผสม 50 กก. (ไม่ใช้ปูนขาว)", "q": 0.44, "u": "ถุง", "p": 220, "a": 96.8, "src": "price book"}, {"d": "ตาข่ายกรงไก่/ลวดกันร้าวรอยต่อ", "q": 1, "u": "เหมา", "p": 5, "a": 5, "src": "ประมาณ"}], "mat": 101.8, "lab": 160, "labsrc": "ค่าแรงฉาบ price book", "tot": 261.8}, {"k": "TILEF", "t": "ปูกระเบื้องพื้น + ปรับระดับ (ต่อ ตร.ม.)", "comp": [{"d": "กระเบื้องปูพื้น (เผื่อ 10%) — ราคาเผื่อเลือก", "q": 1.1, "u": "ตร.ม.", "p": 560, "a": 616, "src": "price book"}, {"d": "ปูนกาวปูกระเบื้อง 20 กก.", "q": 0.25, "u": "ถุง", "p": 180, "a": 45, "src": "price book"}, {"d": "ปูนซีเมนต์ ปรับระดับ", "q": 0.43, "u": "ถุง", "p": 200, "a": 86, "src": "price book"}, {"d": "ทรายหยาบ ปรับระดับ", "q": 0.11, "u": "ลบ.ม.", "p": 1500, "a": 165, "src": "price book"}, {"d": "ยาแนว", "q": 0.3, "u": "กก.", "p": 50, "a": 15, "src": "price book (ประมาณ)"}], "mat": 927, "lab": 280, "labsrc": "ค่าแรงปูพื้น price book", "tot": 1207}, {"k": "TILEW", "t": "บุกระเบื้องผนัง 1.20×0.60 (ต่อ ตร.ม.)", "comp": [{"d": "กระเบื้องผนัง (เผื่อ 10%) — ราคาเผื่อเลือก", "q": 1.1, "u": "ตร.ม.", "p": 560, "a": 616, "src": "price book"}, {"d": "ปูนกาวปูกระเบื้อง 20 กก.", "q": 0.25, "u": "ถุง", "p": 180, "a": 45, "src": "price book"}, {"d": "ยาแนว", "q": 0.3, "u": "กก.", "p": 50, "a": 15, "src": "price book (ประมาณ)"}], "mat": 676, "lab": 360, "labsrc": "ค่าแรงปูผนังห้องน้ำ price book", "tot": 1036}, {"k": "TILEST", "t": "ปูกระเบื้องบันได ลูกตั้ง-ลูกนอน (ต่อ ตร.ม.)", "comp": [{"d": "กระเบื้อง (เผื่อ 15% ตัดขอบ)", "q": 1.15, "u": "ตร.ม.", "p": 560, "a": 644, "src": "price book"}, {"d": "ปูนกาวปูกระเบื้อง 20 กก.", "q": 0.3, "u": "ถุง", "p": 180, "a": 54, "src": "price book"}, {"d": "จมูกบันได/คิ้วกันลื่น", "q": 1.6, "u": "ม.", "p": 60, "a": 96, "src": "ประมาณ"}], "mat": 794, "lab": 360, "labsrc": "ใช้อัตราปูผนัง (งานละเอียด)", "tot": 1154}, {"k": "TILEP", "t": "ปูกระเบื้องสระว่ายน้ำ (ต่อ ตร.ม.)", "comp": [{"d": "กระเบื้องสระ/โมเสค (เผื่อ 10%) — ราคาเผื่อเลือก", "q": 1.1, "u": "ตร.ม.", "p": 900, "a": 990, "src": "ประมาณ"}, {"d": "ปูนกาวเกรดสระ 20 กก.", "q": 0.3, "u": "ถุง", "p": 350, "a": 105, "src": "ประมาณ"}, {"d": "ยาแนวอีพ็อกซี่", "q": 0.4, "u": "กก.", "p": 150, "a": 60, "src": "ประมาณ"}], "mat": 1155, "lab": 450, "labsrc": "ค่าแรงปูสระ price book", "tot": 1605}, {"k": "WPW", "t": "กันซึมซีเมนต์เบส 2 ชั้น พื้นห้องน้ำ/ระเบียง (ต่อ ตร.ม.)", "comp": [{"d": "ซีเมนต์กันซึมชนิดยืดหยุ่น 2 ส่วนผสม", "q": 2.5, "u": "กก.", "p": 65, "a": 162.5, "src": "2569×1.35 ประมาณ"}, {"d": "ผ้าตาข่ายเสริมมุม/รอยต่อ", "q": 1, "u": "เหมา", "p": 20, "a": 20, "src": "ประมาณ"}], "mat": 182.5, "lab": 100, "labsrc": "ประมาณ", "tot": 282.5}, {"k": "WPP", "t": "กันซึมสระ 3 ชั้น + ตาข่าย (ต่อ ตร.ม.)", "comp": [{"d": "ซีเมนต์กันซึมชนิดยืดหยุ่น 2 ส่วนผสม", "q": 3.5, "u": "กก.", "p": 65, "a": 227.5, "src": "ประมาณ"}, {"d": "ตาข่ายไฟเบอร์เสริม", "q": 1.1, "u": "ตร.ม.", "p": 40, "a": 44, "src": "ประมาณ"}], "mat": 271.5, "lab": 120, "labsrc": "ประมาณ", "tot": 391.5}, {"k": "WPR", "t": "กันซึมดาดฟ้า PU 1.5 มม. (ต่อ ตร.ม.)", "comp": [{"d": "PU Waterproof", "q": 1.8, "u": "กก.", "p": 215, "a": 387, "src": "2569×1.35 ประมาณ"}, {"d": "ไพรเมอร์", "q": 0.2, "u": "กก.", "p": 150, "a": 30, "src": "ประมาณ"}], "mat": 417, "lab": 120, "labsrc": "ประมาณ", "tot": 537}, {"k": "C1", "t": "ฝ้ายิปซัม 9 มม. โครงเหล็กชุบสังกะสี ฉาบเรียบ (ต่อ ตร.ม.)", "comp": [{"d": "แผ่นยิปซัม 9 มม. 1.20×2.40 (+5%)", "q": 0.37, "u": "แผ่น", "p": 290, "a": 107.3, "src": "ประมาณ"}, {"d": "โครงคร่าว C-Line/ฉากรอบ/ลวดแขวน", "q": 1, "u": "ตร.ม.", "p": 170, "a": 170, "src": "2569 B2011×1.35 ประมาณ"}, {"d": "ปูนฉาบรอยต่อ + เทป + สกรู", "q": 1, "u": "ตร.ม.", "p": 25, "a": 25, "src": "ประมาณ"}], "mat": 302.3, "lab": 450, "labsrc": "ค่าแรงฝ้า price book", "tot": 752.3}, {"k": "C2", "t": "ฝ้ายิปซัมกันชื้น 9 มม. (ต่อ ตร.ม.)", "comp": [{"d": "แผ่นยิปซัมกันชื้น 9 มม. (+5%)", "q": 0.37, "u": "แผ่น", "p": 420, "a": 155.4, "src": "ประมาณ"}, {"d": "โครงคร่าว C-Line/ฉากรอบ/ลวดแขวน", "q": 1, "u": "ตร.ม.", "p": 170, "a": 170, "src": "ประมาณ"}, {"d": "ปูนฉาบรอยต่อ + เทป + สกรู", "q": 1, "u": "ตร.ม.", "p": 25, "a": 25, "src": "ประมาณ"}], "mat": 350.4, "lab": 450, "labsrc": "ค่าแรงฝ้า price book", "tot": 800.4}, {"k": "PE", "t": "ทาสีภายนอก รองพื้นปูนใหม่ 1 + ทับหน้า 2 (ต่อ ตร.ม.)", "comp": [{"d": "สีรองพื้นปูนใหม่กันด่าง", "q": 0.1, "u": "ลิตร", "p": 180, "a": 18, "src": "ประมาณ"}, {"d": "สีน้ำอะคริลิกภายนอก", "q": 0.2, "u": "ลิตร", "p": 200, "a": 40, "src": "ประมาณ"}], "mat": 58, "lab": 90, "labsrc": "ค่าแรงทาสี price book", "tot": 148}, {"k": "PI", "t": "ทาสีภายใน/ฝ้า รองพื้น 1 + ทับหน้า 2 (ต่อ ตร.ม.)", "comp": [{"d": "สีรองพื้นปูนใหม่", "q": 0.1, "u": "ลิตร", "p": 150, "a": 15, "src": "ประมาณ"}, {"d": "สีน้ำอะคริลิกภายใน", "q": 0.2, "u": "ลิตร", "p": 140, "a": 28, "src": "ประมาณ"}], "mat": 43, "lab": 90, "labsrc": "ค่าแรงทาสี price book", "tot": 133}, {"k": "F3", "t": "พื้นขัดมันผสมกันซึม (ต่อ ตร.ม.)", "comp": [{"d": "ปูนซีเมนต์", "q": 0.5, "u": "ถุง", "p": 200, "a": 100, "src": "price book"}, {"d": "ทรายหยาบ", "q": 0.05, "u": "ลบ.ม.", "p": 1500, "a": 75, "src": "price book"}, {"d": "น้ำยากันซึม + ผงขัดมัน", "q": 1, "u": "ตร.ม.", "p": 40, "a": 40, "src": "ประมาณ"}], "mat": 215, "lab": 150, "labsrc": "ประมาณ", "tot": 365}, {"k": "F4", "t": "พื้นขัดหยาบทับกันซึมดาดฟ้า (ต่อ ตร.ม.)", "comp": [{"d": "ปูนซีเมนต์", "q": 0.43, "u": "ถุง", "p": 200, "a": 86, "src": "price book"}, {"d": "ทรายหยาบ", "q": 0.05, "u": "ลบ.ม.", "p": 1500, "a": 75, "src": "price book"}], "mat": 161, "lab": 120, "labsrc": "ประมาณ", "tot": 281}]};
+const REF=REFDATA;
+const fmt=(v,d=0)=>v==null||v===""||isNaN(v)?"":Number(v).toLocaleString("th-TH",{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n};
+let db=null,canWrite=true;
+const S={cats:new Map(),items:new Map(),draws:new Map(),set:{cont:5,oh:12,vat:7,area:85.8},loaded:{cats:0,items:0,draws:0}};
+let filt="all",openItem=null;
+function toast(t){const el=$("toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function status(cls,t){$("status").className="status "+cls;$("statusTx").textContent=t}
+function dbErr(e){const c=e&&e.code;if(c==="invalid_argument"&&!canWriteChecked){canWrite=false;applyWriteGate();toast("บัญชีนี้ดูได้อย่างเดียว แก้ไขไม่ได้");return}
+  toast(c==="quota_exceeded"?"ฐานข้อมูลเต็ม ลบประวัติเก่าก่อน":"บันทึกไม่สำเร็จ ลองอีกครั้ง");}
+let canWriteChecked=false;
+function applyWriteGate(){document.querySelectorAll("#fItem input,#fItem select,#fItem textarea,#fItem button,#fDraw input,#fDraw select,#fDraw button,#pCont,#pOH,#pVat,#pArea,.addbtn").forEach(el=>el.disabled=!canWrite)}
+
+// ---------- calculations
+function itemCalc(it){
+  const bm=num(it.q)*num(it.mu),bl=num(it.q)*num(it.lu);
+  let dm=0,dl=0,n=0;
+  for(const d of S.draws.values())if(d.item===it.id){n++;if(d.type==="lab")dl+=num(d.amount);else dm+=num(d.amount)}
+  return {bm,bl,bt:bm+bl,dm,dl,dt:dm+dl,rm:bm-dm,rl:bl-dl,rt:bm+bl-dm-dl,n};
+}
+function grouped(){
+  const cats=[...S.cats.values()].sort((a,b)=>a.no-b.no);
+  const items=[...S.items.values()].sort((a,b)=>(a.cat-b.cat)||(a.order-b.order));
+  return cats.map(c=>({c,items:items.filter(i=>i.cat===c.no)}));
+}
+
+// ---------- render
+function render(){
+  if(!S.loaded.cats||!S.loaded.items)return;
+  const G=grouped();
+  let T={bm:0,bl:0,dm:0,dl:0,over:0};
+  const calc=new Map();
+  G.forEach(g=>g.items.forEach(i=>{const k=itemCalc(i);calc.set(i.id,k);T.bm+=k.bm;T.bl+=k.bl;T.dm+=k.dm;T.dl+=k.dl;if(k.rm<-0.5||k.rl<-0.5)T.over++}));
+  const bud=T.bm+T.bl,dr=T.dm+T.dl,rem=bud-dr,pct=bud?dr/bud*100:0;
+  $("nItems").textContent=S.items.size;$("nDraws").textContent=S.draws.size;
+  $("kBud").textContent=fmt(bud);$("kBudS").textContent=`วัสดุ ${fmt(T.bm)} · แรง ${fmt(T.bl)}`;
+  $("kDM").textContent=fmt(T.dm);$("kDMs").textContent=`คงเหลือ ${fmt(T.bm-T.dm)}`;
+  $("kDL").textContent=fmt(T.dl);$("kDLs").textContent=`คงเหลือ ${fmt(T.bl-T.dl)}`;
+  $("kRem").textContent=fmt(rem);$("kRemS").textContent=`เบิกรวม ${fmt(dr)}`;
+  $("kPct").textContent=pct.toFixed(1)+"%";$("kPctBar").style.width=Math.min(100,pct)+"%";
+  $("kOver").textContent=T.over?`${T.over} รายการเบิกเกินงบ`:"ไม่มีรายการเบิกเกินงบ";$("kOver").style.color=T.over?"var(--bad)":"";
+  // BOQ
+  const openSet=new Set([...document.querySelectorAll("details.cat[open]")].map(d=>d.id));
+  const q=$("q").value.trim().toLowerCase();let hits=0;
+  if(!G.length){$("boq").innerHTML=`<div class="empty-state">ยังไม่มีรายการ BOQ ในฐานข้อมูล</div>`;return}
+  $("boq").innerHTML=G.map(g=>{
+    let cm=0,cl=0,cdm=0,cdl=0,rows="",shown=0,lastSub=null;
+    g.items.forEach(i=>{const k=calc.get(i.id);cm+=k.bm;cl+=k.bl;cdm+=k.dm;cdl+=k.dl;
+      const over=k.rm<-0.5||k.rl<-0.5;
+      const okF=filt==="all"||(filt==="drawn"&&k.n>0)||(filt==="over"&&over);
+      const okQ=!q||(i.code+" "+i.d+" "+(i.n||"")).toLowerCase().includes(q);
+      if(!(okF&&okQ))return;shown++;
+      if(i.sub&&i.sub!==lastSub){rows+=`<tr class="sub"><td colspan="13">${esc(i.sub)}</td></tr>`;lastSub=i.sub}
+      const est=i.s!=="ยืนยัน";const p=k.bt?k.dt/k.bt*100:0;
+      rows+=`<tr class="it" tabindex="0" data-id="${esc(i.id)}"><td class="c">${esc(i.code)}</td><td class="d">${esc(i.d)}${est?` <span class="chip est">${esc(i.s)}</span>`:""}${i.img?` <span class="pic">ภาพ</span>`:""}</td><td class="r">${fmt(i.q,2)}</td><td>${esc(i.u)}</td><td class="r">${fmt(i.mu,2)}</td><td class="r">${fmt(i.lu,2)}</td><td class="r">${fmt(k.bm)}</td><td class="r ${k.dm?"drawn":""}">${k.dm?fmt(k.dm):"–"}</td><td class="r ${k.rm<-0.5?"neg":""}">${fmt(k.rm)}</td><td class="r">${fmt(k.bl)}</td><td class="r ${k.dl?"drawn":""}">${k.dl?fmt(k.dl):"–"}</td><td class="r ${k.rl<-0.5?"neg":""}">${fmt(k.rl)}</td><td><div class="prog ${p>100?"over":""}" title="${p.toFixed(0)}%"><i style="width:${Math.min(100,p)}%"></i></div></td></tr>`;});
+    hits+=shown;
+    const ct=cm+cl,cd=cdm+cdl;
+    const hide=(q||filt!=="all")&&!shown;
+    const open=openSet.has("cat-"+g.c.no)||((q||filt!=="all")&&shown);
+    return `<details class="cat" id="cat-${g.c.no}" ${open?"open":""} ${hide?"hidden":""}><summary><span class="no">${String(g.c.no).padStart(2,"0")}</span><span class="nm">${esc(g.c.name)}</span><span class="v m"><small>งบ</small>${fmt(ct)}</span><span class="v lb"><small>เบิกแล้ว</small>${fmt(cd)}</span><span class="v t"><small>คงเหลือ</small><span style="${ct-cd<-0.5?"color:var(--bad)":""}">${fmt(ct-cd)}</span></span><span class="ar" aria-hidden="true">›</span></summary><div class="tw"><table><thead><tr><th rowspan="2">ลำดับ</th><th rowspan="2">รายการ</th><th class="r" rowspan="2">ปริมาณ</th><th rowspan="2">หน่วย</th><th class="r" rowspan="2">วัสดุ/หน่วย</th><th class="r" rowspan="2">แรง/หน่วย</th><th class="grp" colspan="3">ค่าวัสดุ</th><th class="grp" colspan="3">ค่าแรง</th><th rowspan="2">เบิก%</th></tr><tr><th class="r">งบ</th><th class="r">เบิก</th><th class="r">คงเหลือ</th><th class="r">งบ</th><th class="r">เบิก</th><th class="r">คงเหลือ</th></tr></thead><tbody>${rows}<tr class="ctot"><td></td><td>รวมหมวด ${g.c.no}</td><td></td><td></td><td></td><td></td><td class="r">${fmt(cm)}</td><td class="r">${fmt(cdm)}</td><td class="r">${fmt(cm-cdm)}</td><td class="r">${fmt(cl)}</td><td class="r">${fmt(cdl)}</td><td class="r">${fmt(cl-cdl)}</td><td></td></tr></tbody></table></div>${canWrite?`<div class="addline"><button class="btn addbtn" data-addcat="${g.c.no}">+ เพิ่มรายการในหมวดนี้</button></div>`:""}</details>`;
+  }).join("");
+  $("noHit").hidden=hits>0||!(q||filt!=="all");
+  // price tab
+  const direct=bud,s=S.set;
+  ["pCont","pOH","pVat","pArea"].forEach((id,ix)=>{const key=["cont","oh","vat","area"][ix];if(document.activeElement!==$(id))$(id).value=s[key]});
+  const ctg=direct*num(s.cont)/100,oh=(direct+ctg)*num(s.oh)/100,pre=direct+ctg+oh,vat=pre*num(s.vat)/100;
+  $("mDirect").textContent=fmt(direct);$("mCont").textContent=fmt(ctg);$("mOH").textContent=fmt(oh);$("mPre").textContent=fmt(pre);$("mVat").textContent=fmt(vat);$("mGrand").textContent=fmt(pre+vat);
+  $("mSqm").textContent=num(s.area)?fmt(direct/num(s.area))+" บ./ตร.ม.":"";
+  const totals=G.map(g=>({c:g.c,t:g.items.reduce((a,i)=>a+calc.get(i.id).bt,0)}));const mx=Math.max(1,...totals.map(x=>x.t));
+  $("catbars").innerHTML=totals.map(x=>`<div class="cb" data-go="${x.c.no}" role="button" tabindex="0"><span class="i">${x.c.no}</span><span class="n" style="--w:${(x.t/mx*100).toFixed(1)}%">${esc(x.c.name)}</span><span class="a">${fmt(x.t)}</span><span class="p">${direct?(x.t/direct*100).toFixed(1):0}%</span></div>`).join("");
+  renderLedger();
+  if(openItem)fillDrawer(openItem,false);
+  applyWriteGate();
+}
+function renderLedger(){
+  const ty=$("lType").value,f=$("lFrom").value,t=$("lTo").value,q=$("lQ").value.trim().toLowerCase();
+  const rows=[...S.draws.values()].filter(d=>{const it=S.items.get(d.item);const txt=`${d.ref||""} ${d.payee||""} ${d.note||""} ${it?it.code+" "+it.d:""}`.toLowerCase();
+    return (!ty||d.type===ty)&&(!f||d.date>=f)&&(!t||d.date<=t)&&(!q||txt.includes(q))}).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+  let sm=0,sl=0;rows.forEach(d=>d.type==="lab"?sl+=num(d.amount):sm+=num(d.amount));
+  $("ledT").innerHTML=rows.length?`<thead><tr><th>วันที่</th><th>ประเภท</th><th>รายการ BOQ</th><th>เลขที่</th><th>ผู้รับเงิน</th><th class="r">ปริมาณ</th><th class="r">จำนวนเงิน</th></tr></thead><tbody>${rows.map(d=>{const it=S.items.get(d.item);return `<tr class="it" tabindex="0" data-id="${esc(d.item)}"><td class="c">${esc(d.date)}</td><td><span class="tag ${d.type==="lab"?"lab":"mat"}">${d.type==="lab"?"ค่าแรง":"วัสดุ"}</span></td><td class="d">${it?`<span class="c">${esc(it.code)}</span> ${esc(it.d)}`:"(รายการถูกลบ)"}${d.note?`<span class="note">${esc(d.note)}</span>`:""}</td><td>${esc(d.ref)}</td><td>${esc(d.payee)}</td><td class="r">${d.qty?fmt(d.qty,2)+" "+esc(it?it.u:""):""}</td><td class="r"><b>${fmt(d.amount,2)}</b></td></tr>`}).join("")}<tr class="ctot"><td colspan="6">รวม ${rows.length} รายการ · วัสดุ ${fmt(sm)} · ค่าแรง ${fmt(sl)}</td><td class="r">${fmt(sm+sl,2)}</td></tr></tbody>`:`<tbody><tr><td class="empty">ยังไม่มีการเบิก — กดที่รายการในแท็บ BOQ แล้วกรอก "บันทึกการเบิก"</td></tr></tbody>`;
+}
+
+// ---------- drawer
+function openDrawer(id){openItem=id;fillDrawer(id,true);$("shade").hidden=false;$("drawer").hidden=false;$("iDelC").hidden=true;setTimeout(()=>$("iQ").focus(),30)}
+function closeDrawer(){openItem=null;$("shade").hidden=true;$("drawer").hidden=true}
+function fillDrawer(id,full){
+  const it=S.items.get(id);if(!it){closeDrawer();return}
+  $("dCode").textContent=it.code;$("dTitle").textContent=it.d;
+  if(it.img){const src=BOQ_IMG(it);if($("dImg").getAttribute("src")!==src)$("dImg").src=src;$("dFig").hidden=false}else{$("dFig").hidden=true;$("dImg").removeAttribute("src")}
+  if(full){$("iD").value=it.d;$("iCode").value=it.code;$("iU").value=it.u||"";$("iQ").value=it.q??"";$("iS").value=it.s||"ประมาณ";$("iMU").value=it.mu??"";$("iLU").value=it.lu??"";$("iN").value=it.n||"";
+    $("wDate").value=new Date(Date.now()+7*3600e3).toISOString().slice(0,10);["wQ","wP","wA","wRef","wPay","wNote"].forEach(x=>$(x).value="")}
+  liveCalc();
+  const k=itemCalc(it);
+  $("rM").textContent=fmt(k.rm);$("rL").textContent=fmt(k.rl);$("rT").textContent=fmt(k.rt);
+  ["rM","rL","rT"].forEach((x,ix)=>$(x).style.color=[k.rm,k.rl,k.rt][ix]<-0.5?"var(--bad)":"");
+  const ds=[...S.draws.values()].filter(d=>d.item===id).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  $("dList").innerHTML=ds.length?ds.map(d=>`<div class="drow"><span class="c num">${esc(d.date)}</span><span class="tag ${d.type==="lab"?"lab":"mat"}">${d.type==="lab"?"ค่าแรง":"วัสดุ"}</span><span>${esc(d.ref||"")}${d.payee?" · "+esc(d.payee):""}${d.qty?` · ${fmt(d.qty,2)} ${esc(it.u)}`:""}${d.note?`<span class="note" style="display:block;font-size:11px;color:var(--muted)">${esc(d.note)}</span>`:""}</span><span class="amt">${fmt(d.amount,2)}</span>${canWrite?`<button class="x" data-deldraw="${esc(d.id)}" aria-label="ลบใบเบิกนี้" title="ลบ">×</button>`:"<span></span>"}</div>`).join(""):`<p class="hint" style="margin:0">ยังไม่มีการเบิกรายการนี้</p>`;
+}
+function liveCalc(){const q=num($("iQ").value),m=q*num($("iMU").value),l=q*num($("iLU").value);$("cM").textContent=fmt(m);$("cL").textContent=fmt(l);$("cT").textContent=fmt(m+l)}
+["iQ","iMU","iLU"].forEach(x=>$(x).addEventListener("input",liveCalc));
+["wQ","wP"].forEach(x=>$(x).addEventListener("input",()=>{const q=num($("wQ").value),p=num($("wP").value);if(q&&p)$("wA").value=(q*p).toFixed(2)}));
+$("wT").addEventListener("change",()=>{const it=S.items.get(openItem);if(it&&!$("wP").value){}});
+$("dClose").addEventListener("click",closeDrawer);
+$("dZoom").addEventListener("click",()=>{$("zImg").src=$("dImg").src;$("zoom").hidden=false});
+$("zClose").addEventListener("click",()=>$("zoom").hidden=true);$("zoom").addEventListener("click",e=>{if(e.target.id==="zoom")$("zoom").hidden=true});$("shade").addEventListener("click",closeDrawer);
+document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(!$("zoom").hidden){$("zoom").hidden=true;return}if(openItem)closeDrawer()});
+
+$("fItem").addEventListener("submit",async e=>{e.preventDefault();if(!db||!openItem)return;
+  const body={d:$("iD").value.trim(),code:$("iCode").value.trim(),u:$("iU").value.trim(),q:num($("iQ").value),s:$("iS").value,mu:num($("iMU").value),lu:num($("iLU").value),n:$("iN").value.trim(),updatedAt:Date.now()};
+  $("iSave").disabled=true;try{await db.doc("items/"+openItem).update(body);canWriteChecked=true;toast("บันทึกรายการแล้ว")}catch(err){dbErr(err)}finally{$("iSave").disabled=!canWrite}});
+$("iDel").addEventListener("click",()=>$("iDelC").hidden=false);$("iDelNo").addEventListener("click",()=>$("iDelC").hidden=true);
+$("iDelYes").addEventListener("click",async()=>{if(!db||!openItem)return;const id=openItem;
+  try{for(const d of [...S.draws.values()].filter(d=>d.item===id))await db.doc("draws/"+d.id).delete();await db.doc("items/"+id).delete();closeDrawer();toast("ลบรายการแล้ว")}catch(err){dbErr(err)}});
+$("fDraw").addEventListener("submit",async e=>{e.preventDefault();if(!db||!openItem)return;
+  const amount=num($("wA").value);if(!amount){toast("กรอกจำนวนเงินที่เบิก");return}
+  const body={item:openItem,type:$("wT").value,date:$("wDate").value,qty:num($("wQ").value)||null,price:num($("wP").value)||null,amount,ref:$("wRef").value.trim(),payee:$("wPay").value.trim(),note:$("wNote").value.trim(),createdAt:Date.now()};
+  $("wSave").disabled=true;try{await db.collection("draws").add(body);canWriteChecked=true;toast("บันทึกการเบิกแล้ว");["wQ","wP","wA","wRef","wNote"].forEach(x=>$(x).value="")}catch(err){dbErr(err)}finally{$("wSave").disabled=!canWrite}});
+$("dList").addEventListener("click",async e=>{const b=e.target.closest("[data-deldraw]");if(!b||!db)return;
+  if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="ลบ?";b.style.color="var(--bad)";b.style.fontSize="12px";setTimeout(()=>{b.dataset.armed="";b.textContent="×";b.style.color="";b.style.fontSize=""},3000);return}
+  try{await db.doc("draws/"+b.dataset.deldraw).delete();toast("ลบใบเบิกแล้ว")}catch(err){dbErr(err)}});
+
+// row clicks / add
+document.addEventListener("click",async e=>{
+  const tr=e.target.closest("tr.it[data-id]");if(tr&&S.items.has(tr.dataset.id)){openDrawer(tr.dataset.id);return}
+  const add=e.target.closest("[data-addcat]");if(add&&db){const cat=+add.dataset.addcat;
+    const its=[...S.items.values()].filter(i=>i.cat===cat);const order=its.reduce((m,i)=>Math.max(m,i.order||0),0)+1;
+    try{const ref=await db.collection("items").add({cat,order,code:`${cat}.${its.length+1}`,d:"รายการใหม่",q:0,u:"",mu:0,lu:0,n:"",s:"ประมาณ",sub:"",createdAt:Date.now()});canWriteChecked=true;S.items.set(ref.id,{id:ref.id,cat,order,code:`${cat}.${its.length+1}`,d:"รายการใหม่",q:0,u:"",mu:0,lu:0,s:"ประมาณ"});openDrawer(ref.id)}catch(err){dbErr(err)}}
+  const cb=e.target.closest(".cb");if(cb){showTab("boq");const d=$("cat-"+cb.dataset.go);if(d){d.hidden=false;d.open=true;d.scrollIntoView({behavior:"smooth",block:"start"})}}
+});
+document.addEventListener("keydown",e=>{if(e.key!=="Enter")return;const tr=e.target.closest&&e.target.closest("tr.it[data-id]");if(tr&&S.items.has(tr.dataset.id))openDrawer(tr.dataset.id)});
+
+// filters
+$("q").addEventListener("input",render);
+[["fAll","all"],["fDrawn","drawn"],["fOver","over"]].forEach(([id,v])=>$(id).addEventListener("click",()=>{filt=v;["fAll","fDrawn","fOver"].forEach(x=>$(x).setAttribute("aria-pressed",x===id));render()}));
+$("expand").addEventListener("click",()=>{const ds=[...document.querySelectorAll("details.cat:not([hidden])")];const open=!ds.every(d=>d.open);ds.forEach(d=>d.open=open);$("expand").textContent=open?"ปิดทุกหมวด":"เปิดทุกหมวด"});
+["lType","lFrom","lTo","lQ"].forEach(x=>$(x).addEventListener("input",renderLedger));
+// settings save (debounced)
+let setT;["pCont","pOH","pVat","pArea"].forEach((id,ix)=>$(id).addEventListener("input",()=>{const key=["cont","oh","vat","area"][ix];S.set[key]=num($(id).value);render();clearTimeout(setT);setT=setTimeout(async()=>{if(!db||!canWrite)return;try{await db.doc("meta/settings").set({...S.set});canWriteChecked=true}catch(err){dbErr(err)}},700)}));
+
+// tabs
+function showTab(t){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));document.querySelectorAll(".tp").forEach(p=>p.hidden=p.id!=="tab-"+t);try{localStorage.setItem("boqTab2",t)}catch(e){}}
+document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+{const h=location.hash.slice(1);let st=null;try{st=localStorage.getItem("boqTab2")}catch(e){}const ok=["boq","ledger","price","to","ur"];if(ok.includes(h))showTab(h);else if(ok.includes(st))showTab(st)}
+
+// static reference tabs
+$("toT").innerHTML=REF.to.map(s=>`<details class="cat"><summary style="grid-template-columns:minmax(0,1fr) 18px"><span class="nm">${esc(s.s)}</span><span class="ar">›</span></summary><div class="tw"><table><thead><tr><th>รายการ</th><th>วิธีคิด</th><th class="r">ปริมาณ</th><th>หน่วย</th><th>แบบ</th></tr></thead><tbody>${s.rows.map(r=>`<tr><td class="d">${esc(r.d)}</td><td class="c" style="white-space:normal;min-width:180px">${esc(r.f)}</td><td class="r"><b>${fmt(r.v,2)}</b></td><td>${esc(r.u)}</td><td class="c">${esc(r.ref)}</td></tr>`).join("")}</tbody></table></div></details>`).join("");
+$("urT").innerHTML=REF.ur.map(u=>`<div class="ur"><span class="k">${esc(u.k)}</span><h3>${esc(u.t)}</h3><div class="tw"><table><thead><tr><th>องค์ประกอบ</th><th class="r">ปริมาณ</th><th class="r">ราคา</th><th class="r">เงิน</th></tr></thead><tbody>${u.comp.map(c=>`<tr><td>${esc(c.d)}</td><td class="r">${fmt(c.q,2)} ${esc(c.u)}</td><td class="r">${fmt(c.p,2)}</td><td class="r">${fmt(c.a,2)}</td></tr>`).join("")}</tbody></table></div><div class="sum"><span>วัสดุ <b>${fmt(u.mat,2)}</b></span><span>แรง <b>${fmt(u.lab,2)}</b></span><span>รวม <b>${fmt(u.tot,2)}</b></span></div></div>`).join("");
+
+// ---------- connect
+(async()=>{
+  if(!window.claude||!claude.use){status("err","โหลดข้อมูลไม่สำเร็จ");$("boq").innerHTML=`<div class="empty-state">ฐานข้อมูลใช้งานไม่ได้ในมุมมองนี้</div>`;return}
+  db=await claude.use("db");
+  if(!db){status("err","ฐานข้อมูลใช้งานไม่ได้ในมุมมองนี้ ");$("boq").innerHTML=`<div class="empty-state">ฐานข้อมูลใช้งานไม่ได้ในมุมมองนี้ — ลองรีเฟรชหน้าอีกครั้ง</div>`;return}
+  const user=await claude.use("user");
+  if(user){try{const w=await user.can("data.write");if(w===false){canWrite=false}else if(w===true){canWriteChecked=true}}catch(e){}}
+  status("live",canWrite?"เชื่อมต่อแล้ว · บันทึกอัตโนมัติ เห็นพร้อมกันทุกคน":"เชื่อมต่อแล้ว · โหมดดูอย่างเดียว");
+  const onErr=e=>{status("err","การเชื่อมต่อขาด รีเฟรชหน้าเพื่อลองใหม่")};
+  db.collection("cats").onSnapshot(s=>{S.cats=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));const m=new Map();for(const v of S.cats.values())m.set(v.no,v);S.cats=new Map([...m.entries()]);S.loaded.cats=1;render()},onErr);
+  db.collection("items").onSnapshot(s=>{S.items=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));S.loaded.items=1;render()},onErr);
+  db.collection("draws").onSnapshot(s=>{S.draws=new Map(s.docs.map(d=>[d.id,{id:d.id,...d.data()}]));S.loaded.draws=1;render()},onErr);
+  db.doc("meta/settings").onSnapshot(s=>{if(s.exists)Object.assign(S.set,s.data());render()},onErr);
+})();
+</script>
+
+</html>
