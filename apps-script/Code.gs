@@ -48,7 +48,8 @@ function setPin() {
 }
 
 function getAll() {
-  const sh = sheet_();
+  let sh = sheet_();
+  if (sh.getLastRow() < 2) { setup(); sh = sheet_(); } // AUTO-SETUP: first open imports BOQ
   const n = sh.getLastRow() - 1;
   const out = {};
   if (n > 0) sh.getRange(2, 1, n, 3).getValues().forEach(r => {

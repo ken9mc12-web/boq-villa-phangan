@@ -15,3 +15,7 @@
 7. รหัสแก้ไขเริ่มต้นคือ `1234` — เปลี่ยนได้: แก้ตัวเลขในฟังก์ชัน `setPin` แล้ว Run
 
 ข้อมูลทั้งหมดอยู่ในแท็บ `db` ของ Google Sheet (สำรองข้อมูลได้ด้วย ไฟล์ → ทำสำเนา)
+
+## ลิงก์ที่ใช้งานอยู่
+- ดูอย่างเดียว: https://ken9mc12-web.github.io/boq-villa-phangan/
+- แก้ไข/บันทึกเบิก (Google Apps Script): https://script.google.com/macros/s/AKfycbx2CgXvrSf-HgPdjTiELxNAr1qaPl_qfpIDFCVb_FdcmTVUiS8RkRgDp6P_IpYRZciDPw/exec
