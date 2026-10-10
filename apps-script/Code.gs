@@ -7,6 +7,7 @@
  */
 const SITE = 'https://ken9mc12-web.github.io/boq-villa-phangan/';   // ที่อยู่เว็บ GitHub Pages (ภาพ + ข้อมูลตั้งต้น)
 const SHEET = 'db';
+const SSID = '';   // ใส่ ID ของ Google Sheet ถ้าสร้างสคริปต์แยก (ว่าง = ใช้ชีตที่ผูกกับสคริปต์นี้)
 
 function doGet() {
   const t = HtmlService.createTemplateFromFile('Index');
@@ -18,7 +19,7 @@ function doGet() {
 }
 
 function sheet_() {
-  const ss = SpreadsheetApp.getActive();
+  const ss = SSID ? SpreadsheetApp.openById(SSID) : SpreadsheetApp.getActive();
   let sh = ss.getSheetByName(SHEET);
   if (!sh) {
     sh = ss.insertSheet(SHEET);
